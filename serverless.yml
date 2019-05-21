@@ -4,7 +4,9 @@ service:
 # Add the serverless-webpack plugin
 plugins:
   - serverless-webpack
-
+  - serverless-dynamodb-local
+  - serverless-offline
+  
 provider:
   name: aws
   runtime: nodejs8.10
@@ -12,7 +14,19 @@ provider:
     -  Effect: "Allow"
        Action:
          - "iam:GetLoginProfile"
+         - "iam:ListUserTags"
        Resource: "arn:aws:iam::656901843610:user/*"  
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"       
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
 
 functions:
   hello:
@@ -21,3 +35,29 @@ functions:
       - http:
           method: get
           path: hello
+  createRequest:
+    handler: createRequest.handler
+    events:
+      - http:
+          method: post
+          path: request
+
+
+resources:
+  Resources:
+    TodosDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
