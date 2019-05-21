@@ -31,4 +31,3 @@ export const hello: APIGatewayProxyHandler = (event, context, callback) => {
 
 }
 
-c
