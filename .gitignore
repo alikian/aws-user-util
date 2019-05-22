@@ -22,6 +22,7 @@ coverage
 
 .serverless
 .dynamodb
+.webpack
 package-lock.json
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
