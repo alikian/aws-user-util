@@ -6,6 +6,7 @@ plugins:
   - serverless-webpack
   - serverless-dynamodb-local
   - serverless-offline
+  - serverless-pseudo-parameters
   
 provider:
   name: aws
@@ -15,7 +16,7 @@ provider:
        Action:
          - "iam:GetLoginProfile"
          - "iam:ListUserTags"
-       Resource: "arn:aws:iam::656901843610:user/*"  
+       Resource: "arn:aws:iam::#{AWS::AccountId}:user/*"  
     - Effect: Allow
       Action:
         - dynamodb:Query
