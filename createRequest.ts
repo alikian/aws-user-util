@@ -6,7 +6,9 @@ import dynamodb from './dynamodb';
 
 export const handler: APIGatewayProxyHandler = (event, context, callback) => {
     console.log(context);           // successful response
-    let userName = "ali.kian"
+    var bodyJson = JSON.parse(event.body);
+    console.log(bodyJson.user);
+    let userName = bodyJson.user;
     var params = {
         UserName: userName
     };
@@ -16,27 +18,29 @@ export const handler: APIGatewayProxyHandler = (event, context, callback) => {
     iam.listUserTags(params, function (err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else {
+
             console.log(data.Tags);           // successful response
             let emailTag = data.Tags.find(tag => tag.Key.toLowerCase() == "email")
-            console.log(emailTag.Value);           // successful response
-            const id: string = uuid();
-            console.log(id);
-            const timestamp = new Date().getTime();
-            const params = {
-                TableName: process.env.DYNAMODB_TABLE,
-                Item: {
-                    id: id,
-                    email: emailTag.Value,
-                    createdAt: timestamp,
-                    userName: userName,
-                    updatedAt: null
-                }
-            };
             try {
+                console.log(emailTag.Value);           // successful response
+                const id: string = uuid();
+                console.log(id);
+                const timestamp = new Date().getTime();
+                const params = {
+                    TableName: process.env.DYNAMODB_TABLE,
+                    Item: {
+                        id: id,
+                        email: emailTag.Value,
+                        createdAt: timestamp,
+                        userName: userName,
+                        updatedAt: null,
+                        identity: event.requestContext.identity
+                    }
+                };
                 const data = dynamodb.put(params).promise();
                 const response = {
                     statusCode: 200,
-                    body: JSON.stringify({params, data}),
+                    body: JSON.stringify({ params, data }),
                 };
                 callback(null, response);
 
@@ -46,7 +50,7 @@ export const handler: APIGatewayProxyHandler = (event, context, callback) => {
                     error: `Could not post: ${error.stack}`
                 };
             }
-            
+
 
 
         }
