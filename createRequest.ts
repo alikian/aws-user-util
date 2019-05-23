@@ -16,11 +16,27 @@ export const handler: APIGatewayProxyHandler = (event, context, callback) => {
 
     var iam = new AWS.IAM();
     iam.listUserTags(params, function (err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
+        if (err){
+            console.log(err, err.stack); // an error occurred
+            const response = {
+                statusCode: 400,
+                body: `User not found`
+            };
+            callback(null, response);
+
+        } 
         else {
 
             console.log(data.Tags);           // successful response
             let emailTag = data.Tags.find(tag => tag.Key.toLowerCase() == "email")
+            if(emailTag ==null){
+                console.log("User not found");           // successful response
+                const response = {
+                    statusCode: 400,
+                    body: `There is 'email' address TAG`
+                };
+                callback(null, response);
+            }
             try {
                 console.log(emailTag.Value);           // successful response
                 const id: string = uuid();
